@@ -4,10 +4,9 @@ class Enum_DB {
     constructor(_db_server) {
         // always initialize all instance properties
         this.db_server = _db_server
-        this.Enum_Type =
-        this.model = this.model()
+        this.model = this._model()
     }
-    model() {
+    _model() {
         const model = this.db_server.define('sequelize_enum',
         {
             description:{type: Sequelize.STRING},
@@ -19,20 +18,14 @@ class Enum_DB {
                   }
             }
         },
-        {underscored: true,
-         timestamps: true,
-         paranoid: true})
-
-model.belongsTo(this.Post, {
-  foreignKey: 'commentable_id',
-  constraints: false,
-  as: 'post'
-});
+        {
+            underscored: true,
+             timestamps: true,
+             paranoid: true
+        })
 
         return model
     }
-
-
 }
 
 // export the class instance

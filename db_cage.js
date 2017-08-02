@@ -4,10 +4,10 @@ class Cage_DB {
     constructor(_db_server, _Enum) {
         // always initialize all instance properties
         this.db_server = _db_server
-        this.Enum = _Enum
-        this.model = this.model()
+        this.model = this._model(_Enum)
     }
-    model() {
+
+    _model(_Enum) {
         const model = this.db_server.define('sequelize_cage',
         {
             id_alias:{type: Sequelize.STRING},
@@ -17,17 +17,14 @@ class Cage_DB {
             end_date:{type: Sequelize.DATE},
             notes:{type: Sequelize.TEXT}
         },
-        {underscored: true,
-         timestamps: true,
-         paranoid: true})
+        {
+            underscored: true,
+            timestamps: true,
+            paranoid: true
+        })
 
-        model.belongsTo(this.Enum,
-            {
+        model.belongsTo(_Enum, { as:'type', foreignKey : 'type_id'})
 
-                foreignKey : 'type_id',
-                constraints: false,
-                scope:{type: 'CAGE_TYPE'}
-            })
         return model
 
     }
