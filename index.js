@@ -10,7 +10,9 @@ const db = new Sequelize('postgres', 'postgres', 'postgres', {
     }
 });
 
-
+function random_int(max) {
+    return Math.floor(Math.random() * (max));
+}
 const log_json = (json) => {
         let cache = [];
         const result = JSON.stringify(json, (key, value) => {
@@ -51,12 +53,12 @@ db
             .then(()=>{
                 console.log("creating enums: ")
                 const create_promises = [
-                    Enum.model.create({description: '0 breed_status', type: 'BREED_STATUS'}),
-                    Enum.model.create({description: '1 breed_status', type: 'BREED_STATUS'}),
+                    Enum.model.create({description: 'breed_status_0', type: 'BREED_STATUS'}),
+                    Enum.model.create({description: 'breed_status_1', type: 'BREED_STATUS'}),
                     Enum.model.create({description: 'male', type: 'SEX'}),
                     Enum.model.create({description: 'female', type: 'SEX'}),
-                    Enum.model.create({description: '0 mouse_status', type: 'MOUSE_STATUS'}),
-                    Enum.model.create({description: '1 mouse_status', type: 'MOUSE_STATUS'}),
+                    Enum.model.create({description: 'mouse_status_0', type: 'MOUSE_STATUS'}),
+                    Enum.model.create({description: 'mouse_status_1', type: 'MOUSE_STATUS'}),
                     Enum.model.create({description: 'Goldenticket', type: 'MOUSE_GENOTYPE'}),
                     Enum.model.create({description: 'Rag2', type: 'MOUSE_GENOTYPE'}),
                     Enum.model.create({description: 'B6', type: 'MOUSE_GENOTYPE'}),
@@ -76,7 +78,7 @@ db
                 log_json(cage_types)
                 let index = 300
                 let create_promises = cage_types.map(cage_type =>{
-                    return Cage.model.create({id_alias: index,
+                    return Cage.model.create({id_alias: index += 1,
                         type_id: cage_type.id,
                         setup_date: Date(),
                         end_date: Date(),
@@ -89,37 +91,50 @@ db
                 })
                 return Promise.all(create_promises).catch(err => console.log("\n\n04" + err))
             })
-            .then(()=>{
-
-                Cage.model.findAll().then((cages) => {
-                    log_json(cages)
-                    return {foo: cages.length}
-                })
-                .then((cat) =>{
-                    log_json(cat)
-                }).catch(err => console.log("\n\n05" + err))
-
-
-            })
             .then(() =>{
                 let type_map = {}
-               return Enum.model.findAll({attributes: ['id', 'description', 'type'],
-                    where: {type: ['SEX', 'MOUSE_STATUS', 'MOUSE_GENOTYPE']}}) })
+                return Enum.model.findAll(
+                    {
+                        attributes: ['id', 'type'],
+                        where: {type: ['SEX', 'MOUSE_STATUS', 'MOUSE_GENOTYPE']}
+                    })
                     .then(types => {
+                        // log_json(types)
+                        let type_map = {}
                         types.forEach(type => {
-                            type_map[type.type][type.description].id = type.id
+                            log_json(type)
+                            if (type_map[type.type]){
+                                type_map[type.type].push(type.id)
+                            }
+                            else {
+                              type_map[type.type] = [type.id]
+                            }
                         })
+                        return type_map
                     })
                     .catch(err => console.log("\n\n03" + err))
             })
             .then((type_map) =>{
+                log_json(type_map)
                 let index = 100
-                Mouse.model.create(
+                for(i=0; i < 10; i++){
+                    const random_g =random_int(type_map.MOUSE_GENOTYPE.length)
+                    const random_sx =random_int(type_map.SEX.length)
+                    const random_s =random_int(type_map.MOUSE_STATUS.length)
+                    const random_e = random_int(100)
+                    Mouse.model.create(
                     {
+                        status_id: type_map.MOUSE_STATUS[random_s],
                         id_alias: index += 1,
-                        genotype_id: map['MOUSE_GENOTYPE'][]
+                        genotype_id: type_map.MOUSE_GENOTYPE[random_g],
+                        dob: Date(),
+                        sex_id: type_map.SEX[random_sx],
+                        ear_tag: random_e,
+                        notes: 'i am minerva mouse ' + index
+                    })
+                }
 
-                })
+
             })
 
 

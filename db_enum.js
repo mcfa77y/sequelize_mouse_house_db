@@ -20,8 +20,8 @@ class Enum_DB {
         },
         {
             underscored: true,
-             timestamps: true,
-             paranoid: true
+            timestamps: true,
+            paranoid: true
         })
 
         return model
